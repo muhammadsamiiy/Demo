@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareReferral - Home Health Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="/assets/css/theme.css">
+<link rel="stylesheet" href="/assets/css/app.css">
+<link rel="stylesheet" href="/assets/css/ui-controls.css">
+<link rel="stylesheet" href="/assets/css/ui-utilities.css">
+<link rel="stylesheet" href="/assets/css/print.css">
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">CareReferral</div>
+    <div class="login-sub">Home Health Management System</div>
+    <div class="login-err" id="login-err"></div>
+    <div class="form-group mb-14">
+      <label class="form-label">Username</label>
+      <input class="form-input" id="l-user" placeholder="admin" value="admin">
+    </div>
+    <div class="form-group mb-20">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="l-pass" type="password" placeholder="••••••••" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary w-full py-12" onclick="doLogin()">Sign In</button>
+    <div class="text-muted-12-center">Default: admin / admin123</div>
+  </div>
+</div>
+
+<div class="app is-hidden" id="main-app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-mark">Applied Home Health Network</div><div class="logo-name">CareReferral</div></div>
+    <nav class="nav-section">
+      <div class="nav-label">Main</div>
+      <button class="nav-item active" onclick="showTab('dashboard')"><span class="nav-icon">📊</span><span>Dashboard</span></button>
+      <button class="nav-item" onclick="showTab('referral-list')"><span class="nav-icon">📋</span><span>Referral List</span></button>
+      <button class="nav-item" onclick="showTab('schedule')"><span class="nav-icon">📅</span><span>Schedule</span></button>
+      <button class="nav-item" onclick="showTab('logs')"><span class="nav-icon">📝</span><span>Logs</span></button>
+      <button class="nav-item" onclick="showTab('archive')"><span class="nav-icon">🗂️</span><span>Archive</span></button>
+    </nav>
+    <nav class="nav-section is-hidden" id="admin-nav">
+      <div class="nav-label">Admin</div>
+      <button class="nav-item" onclick="showTab('users')"><span class="nav-icon">👥</span><span>Users</span></button>
+      <button class="nav-item" onclick="showTab('admin-panel')"><span class="nav-icon">⚙️</span><span>Settings</span></button>
+    </nav>
+    <div class="user-info">
+      <div class="uname" id="sidebar-uname">-</div>
+      <div class="urole" id="sidebar-urole">-</div>
+      <button class="btn btn-sm mt-8 w-full" onclick="doLogout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn is-hidden" id="btn-export-csv" onclick="exportCSV()">Export CSV</button>
+        <button class="btn btn-primary" id="btn-new-referral" onclick="openNewReferralModal()">+ New Referral</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="chart-grid">
+          <div class="chart-card"><div id="referral-source-gender-card" class="rsg-wrap"></div></div>
+          <div class="chart-card archive-card">
+            <div class="archive-card-header">
+              <div class="archive-card-title">
+                Archive Reason
+              </div>
+            </div>
+            <div class="archive-big-number" id="archive-reason-total">0</div>
+            <div class="archive-chart-area" id="archive-reason-chart"></div>
+          </div>
+          <div class="chart-card svc-card">
+            <div class="chart-title">Client Type Breakdown</div>
+            <div class="svc-body">
+              <div class="svc-radial">
+                <svg id="svc-radial-svg" viewBox="0 0 230 230" width="230" height="230" aria-label="Client type radial overview"></svg>
+                <div class="svc-center">
+                  <div class="svc-center-value" id="svc-center-value">0</div>
+                </div>
+              </div>
+              <div class="svc-metrics">
+                <div class="svc-metrics-list" id="svc-metrics-list"></div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-card checklist-card">
+            <div class="chart-title">Checklist Completion</div>
+            <div class="checklist-summary" id="checklist-summary"></div>
+            <div class="checklist-list" id="checklist-completion-list"></div>
+          </div>
+        </div>
+        <div class="perf-grid">
+          <div class="perf-card">
+            <div class="perf-title">Marketer Performance</div>
+            <div class="perf-list" id="marketer-performance-list"></div>
+          </div>
+          <div class="perf-card">
+            <div class="perf-title">Assigned To Performance</div>
+            <div class="perf-list" id="assigned-performance-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REFERRAL LIST -->
+      <div id="tab-referral-list" class="tab-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="view-switch" role="group" aria-label="Referral list views">
+              <button class="view-switch-btn active" id="view-all-btn" onclick="setReferralView('all')">All Referrals</button>
+              <button class="view-switch-btn" id="view-intermediary-btn" onclick="setReferralView('intermediary')">By Intermediary</button>
+            </div>
+            <input class="search-input" placeholder="Search by name, city, intermediaries..." id="search-input" oninput="filterTable()">
+            <select class="filter-select" id="status-filter" onchange="filterTable()">
+              <option value="">All statuses</option>
+            </select>
+            <select class="filter-select" id="intermediary-filter" onchange="filterTable()">
+              <option value="">All intermediaries</option>
+            </select>
+            <button class="btn" id="btn-preview-followup" onclick="previewFollowUpEmails()">Preview Follow-Up Emails</button>
+            <button class="btn" onclick="refreshReferralList()">Refresh</button>
+          </div>
+          <div id="all-referrals-section" class="split-table-section active">
+            <div id="referral-table-container"><div class="loading">Loading...</div></div>
+          </div>
+          <div id="intermediary-referrals-section" class="split-table-section">
+            <div id="intermediary-table-container"><div class="loading">Loading...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div id="tab-schedule" class="tab-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <span class="section-title-15">Current Schedules</span>
+            <button class="btn ml-auto" onclick="exportScheduleCSV()">⬇ Export CSV</button>
+            <button class="btn btn-primary" onclick="refreshSchedule()">Refresh</button>
+          </div>
+          <div class="panel-block">
+            <div class="schedule-grid">
+              <div class="cal-card">
+                <div class="cal-header">
+                  <button class="cal-nav" type="button" onclick="changeMonth(-1)">‹</button>
+                  <div class="cal-month" id="cal-month-label"></div>
+                  <button class="cal-nav" type="button" onclick="changeMonth(1)">›</button>
+                </div>
+                <div class="cal-days-header">
+                  <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                </div>
+                <div class="cal-days" id="cal-days"></div>
+              </div>
+              <div class="schedule-events">
+                <div class="form-section-title mb-12">Scheduled Dates</div>
+                <div class="events-list" id="events-list"></div>
+              </div>
+            </div>
+          </div>
+          <div id="schedule-table-container"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- LOGS -->
+      <div id="tab-logs" class="tab-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <span class="section-title-15">System Logs</span>
+            <select class="filter-select" id="log-user-filter" onchange="filterLogs()">
+              <option value="">All users</option>
+            </select>
+            <input class="search-input" placeholder="Search logs..." id="log-search" oninput="filterLogs()">
+            <button class="btn" onclick="loadLogs()">Refresh</button>
+          </div>
+          <div id="logs-table-container"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- ARCHIVE -->
+      <div id="tab-archive" class="tab-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <input class="search-input" placeholder="Search archive..." id="archive-search" oninput="filterArchive()">
+            <select class="filter-select" id="archive-reason-filter" onchange="filterArchive()">
+              <option value="">All reasons</option>
+            </select>
+          </div>
+          <div id="archive-table-container"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="tab-users" class="tab-content">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <span class="section-title-15">User Accounts</span>
+            <button class="btn btn-primary ml-auto" onclick="openUserModal()">+ New User</button>
+          </div>
+          <div id="users-table-container"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- ADMIN PANEL -->
+      <div id="tab-admin-panel" class="tab-content">
+        <div class="tab-bar">
+          <button class="tab-pill active" onclick="adminTab('dropdowns',this)">Dropdown Options</button>
+          <button class="tab-pill" onclick="adminTab('pdf-settings',this)">PDF Settings</button>
+          <button class="tab-pill" onclick="adminTab('comment-templates',this)">Comment Templates</button>
+          <button class="tab-pill" onclick="adminTab('stage-mappings',this)">Stage-Comment Links</button>
+          <button class="tab-pill" onclick="adminTab('email-settings',this)">Email Settings</button>
+          <button class="tab-pill" onclick="adminTab('email-replies',this)">Email Replies</button>
+        </div>
+        <div id="admin-dropdowns">
+          <div class="admin-grid" id="dropdown-grid"></div>
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Add New Option</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Category</label>
+                <select class="form-select" id="new-dd-cat" onchange="toggleNewDropdownEmailField()">
+                  <option value="archive_reason">Archive Reason</option>
+                  <option value="branch">Branch</option>
+                  <option value="client_type">Client Type</option>
+                  <option value="desired_caregiver">Desired Caregiver</option>
+                  <option value="gender">Gender</option>
+                  <option value="home_visit_status">Home Visit Status</option>
+                  <option value="referral_type">Referral Type</option>
+                  <option value="referral_source">Referral Source</option>
+                  <option value="relationship">Relationship</option>
+                  <option value="services">Services</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Value / Label</label><input class="form-input" id="new-dd-val" placeholder="e.g. Respite Care"></div>
+              <div class="form-group is-hidden" id="new-dd-email-wrap"><label class="form-label">Email <span class="required-star">*</span></label><input class="form-input" id="new-dd-email" type="email" placeholder="intermediary@example.com"></div>
+              <div class="form-group"><label class="form-label">&nbsp;</label><button class="btn btn-primary w-full" onclick="addDropdownOption()">Add</button></div>
+            </div>
+          </div>
+        </div>
+        <div id="admin-pdf-settings" class="is-hidden">
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">PDF Field Selection</div>
+            <div class="form-hint mb-14">Choose which details appear in exported PDF. If none selected, all details are included.</div>
+            <div class="flex-wrap-row mb-14">
+              <button class="btn btn-sm" type="button" onclick="selectAllPdfFields()">Select All</button>
+              <button class="btn btn-sm" type="button" onclick="clearPdfFields()">Clear All</button>
+              <button class="btn btn-sm btn-primary" type="button" onclick="savePdfSettings()">Save PDF Settings</button>
+            </div>
+            <div id="pdf-settings-grid"><div class="loading">Loading PDF fields...</div></div>
+          </div>
+        </div>
+        <div id="admin-comment-templates" class="is-hidden">
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Smart Comment Templates</div>
+            <div class="form-hint mb-14">These templates drive the Comment Type dropdown and auto-fill text and date for timeline comments.</div>
+            <div class="flex-wrap-row mb-14">
+              <button class="btn btn-sm" type="button" onclick="addCommentTemplateRow()">+ Add Template</button>
+              <button class="btn btn-sm btn-primary" type="button" onclick="saveCommentTemplates()">Save Comment Templates</button>
+            </div>
+            <div id="comment-template-list"><div class="loading">Loading comment templates...</div></div>
+          </div>
+        </div>
+        <div id="admin-stage-mappings" class="is-hidden">
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Link Workflow Stages to Comment Types</div>
+            <div class="form-hint mb-14">Map comment types to workflow stages. When users add a comment, the system knows which stage it represents for workflow tracking.</div>
+            <div class="flex-wrap-row mb-14">
+              <button class="btn btn-sm" type="button" onclick="addStageMappingRow()">+ Add Mapping</button>
+              <button class="btn btn-sm btn-primary" type="button" onclick="saveStageMappings()">Save Mappings</button>
+            </div>
+            <div id="stage-mapping-list"><div class="loading">Loading stage mappings...</div></div>
+          </div>
+        </div>
+        <div id="admin-email-settings" class="is-hidden">
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">SMTP Configuration</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">SMTP Host</label><input class="form-input" id="email-smtp-host" placeholder="smtp.gmail.com"></div>
+              <div class="form-group"><label class="form-label">SMTP Port</label><input class="form-input" id="email-smtp-port" type="number" placeholder="587"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">SMTP User</label><input class="form-input" id="email-smtp-user" placeholder="you@example.com"></div>
+              <div class="form-group"><label class="form-label">SMTP Password</label><input class="form-input" id="email-smtp-password" type="password" placeholder="App password"></div>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="saveEmailSettings()">Save SMTP Settings</button>
+          </div>
+
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Template Configuration</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Template TO</label><input class="form-input" id="email-template-to" placeholder="{{intermediary_email}} or team@example.com"></div>
+              <div class="form-group"><label class="form-label">Template CC</label><input class="form-input" id="email-template-cc" placeholder="manager@example.com, ops@example.com"></div>
+            </div>
+            <div class="form-row-full">
+              <div class="form-group"><label class="form-label">Email Subject Template</label><input class="form-input" id="email-subject-template" placeholder="Patient Referral:"></div>
+            </div>
+            <div class="form-row-full">
+              <div class="form-group"><label class="form-label">Email Body Template (HTML)</label><textarea class="form-textarea" id="email-body-template" placeholder="Please find attached the referral for patient"></textarea></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Add Referral Contact Email</label>
+                <select class="form-select" id="email-include-referral-contact">
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Add Sender Account Email</label>
+                <select class="form-select" id="email-include-sender-account">
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="saveEmailSettings()">Save Template Settings</button>
+          </div>
+
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Follow-Up Template Configuration</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Follow-Up Frequency</label>
+                <select class="form-select" id="followup-frequency">
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Follow-Up Send Time</label>
+                <input class="form-input" id="followup-send-time" type="time">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Follow-Up TO</label><input class="form-input" id="followup-to" placeholder="{{intermediary_email}} or team@example.com"></div>
+              <div class="form-group"><label class="form-label">Follow-Up CC</label><input class="form-input" id="followup-cc" placeholder="manager@example.com, ops@example.com"></div>
+            </div>
+            <div class="form-row-full">
+              <div class="form-group"><label class="form-label">Follow-Up Subject Template</label><input class="form-input" id="followup-subject-template" placeholder="Follow-Up Summary:"></div>
+            </div>
+            <div class="form-row-full">
+              <div class="form-group"><label class="form-label">Follow-Up Body Template (HTML)</label><textarea class="form-textarea" id="followup-body-template" placeholder="Please review the active referral follow-up list below."></textarea></div>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="saveEmailSettings()">Save Follow-Up Settings</button>
+          </div>
+
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Criteria-Based Intermediary Mapping</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Township<span class="required-star">*</span></label><input class="form-input" id="map-township" placeholder="Township" required></div>
+              <div class="form-group"><label class="form-label">Postal Code<span class="required-star">*</span></label><input class="form-input" id="map-postal-code" placeholder="60601" required></div>
+              <div class="form-group"><label class="form-label">Form Type<span class="required-star">*</span></label><select class="form-input" id="map-form-type" required><option value="">Select Form Type</option><option value="Intake Form">Intake Form</option><option value="Medium Form">Medium Form</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Intermediary Name<span class="required-star">*</span></label><input class="form-input" id="map-intermediary" placeholder="Intermediary name" required></div>
+              <div class="form-group"><label class="form-label">Email<span class="required-star">*</span></label><input class="form-input" id="map-email" type="email" placeholder="intermediary@example.com" required></div>
+            </div>
+            <div class="flex-wrap-row">
+              <button class="btn" id="map-save-btn" type="button" onclick="saveIntermediaryMapping()">Add Mapping</button>
+              <button class="btn is-hidden" id="map-cancel-btn" type="button" onclick="cancelIntermediaryMappingEdit()">Cancel Edit</button>
+            </div>
+            <div id="intermediary-mapping-list" class="mt-14"><div class="loading">Loading mappings...</div></div>
+          </div>
+
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Referral CSV Template & Import</div>
+            <div class="form-hint mb-12">Download blank template, fill referral columns, then import. System auto-generates unique ID and timestamps.</div>
+            <div class="flex-wrap-row mb-12">
+              <button class="btn" type="button" onclick="downloadReferralTemplateCSV()">Download Blank Template</button>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Import CSV File</label>
+                <input class="form-input" id="settings-referral-import-file" type="file" accept=".csv">
+              </div>
+              <div class="form-group max-w-220">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-primary w-full" type="button" onclick="importReferralTemplateCSV()">Import Data</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-email-replies" class="is-hidden">
+          <div class="admin-card mb-24">
+            <div class="admin-card-title">Email Replies</div>
+            <div class="form-hint mb-12">Only replies from emails already present in your system database are shown.</div>
+            <div class="tab-bar mb-12" id="email-replies-refresh-tabs">
+              <button class="tab-pill active" type="button" data-mode="manual" onclick="setEmailRepliesRefreshMode('manual')">Manual Refresh</button>
+              <button class="tab-pill" type="button" data-mode="auto" onclick="setEmailRepliesRefreshMode('auto')">Auto Refresh</button>
+            </div>
+            <div class="flex-wrap-row mb-12">
+              <div class="form-group max-w-220">
+                <label class="form-label" for="email-replies-from-date">From Date</label>
+                <input class="form-input" id="email-replies-from-date" type="date" onchange="onEmailRepliesDateChange()">
+              </div>
+              <div class="form-group max-w-220">
+                <label class="form-label" for="email-replies-to-date">To Date</label>
+                <input class="form-input" id="email-replies-to-date" type="date" disabled>
+              </div>
+              <button class="btn btn-sm" type="button" onclick="refreshEmailRepliesBox()">Refresh Replies</button>
+              <div id="email-replies-auto-controls" class="flex-wrap-row email-replies-auto-controls is-hidden">
+                <label class="form-label" for="email-replies-interval">Timer</label>
+                <select class="form-select" id="email-replies-interval" onchange="setEmailRepliesAutoInterval()">
+                  <option value="30">30 sec</option>
+                  <option value="60">1 min</option>
+                  <option value="120" selected>2 min</option>
+                  <option value="300">5 min</option>
+                  <option value="600">10 min</option>
+                </select>
+              </div>
+            </div>
+            <div id="email-replies-refresh-status" class="form-hint mb-12">Mode: Manual</div>
+            <div id="email-replies-box"><div class="loading">Loading replies...</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW / EDIT REFERRAL MODAL -->
+<div class="modal-overlay" id="referral-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="modal-title">New Referral</h2>
+      <div class="text-muted-13">Complete all required fields (*)</div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn is-hidden" id="btn-modal-pdf" onclick="exportCurrentPDF()">Export PDF</button>
+      <button class="btn btn-primary" id="btn-modal-save" onclick="submitReferral()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal-box">
+    <div class="modal-header"><h2 id="user-modal-title">New User</h2></div>
+    <div class="modal-body" id="user-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('user-modal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="modal-overlay" id="followup-preview-modal">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2>Follow-Up Email Preview</h2>
+      <div class="text-muted-13">Grouped email content that will be sent per intermediary.</div>
+    </div>
+    <div class="modal-body" id="followup-preview-content"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeFollowUpPreview()">Close</button>
+      <button class="btn btn-primary" id="btn-followup-send-now" onclick="sendFollowUpNow()">Send Now</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="intermediary-schedule-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Intermediary Schedule</h2>
+      <div class="text-muted-13" id="intermediary-schedule-subtitle">Set follow-up schedule before turning OFF.</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Frequency</label>
+          <select class="form-select" id="intermediary-schedule-frequency">
+            <option value="daily">Daily</option>
+            <option value="weekly" selected>Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Send Time</label>
+          <input class="form-input" id="intermediary-schedule-time" type="time" value="09:00" step="60" placeholder="HH:MM (24-hour)">
+          <div class="form-hint">Use 24-hour format (HH:MM), example: 07:16 or 19:30.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="btn-intermediary-send-now" onclick="sendIntermediaryFollowUpNow()">Send Now</button>
+      <button class="btn" onclick="closeIntermediaryScheduleModal()">Cancel</button>
+      <button class="btn btn-primary" id="btn-intermediary-schedule-save" onclick="saveIntermediaryScheduleAndToggle()">Save & Toggle OFF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="email-reply-modal">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2 id="email-reply-modal-title">Email Reply</h2>
+      <div class="text-muted-13" id="email-reply-modal-meta"></div>
+    </div>
+    <div class="modal-body">
+      <iframe id="email-reply-frame" title="Email Reply Content" style="width:100%;height:62vh;border:1px solid var(--border);border-radius:12px;background:white;" sandbox=""></iframe>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEmailReplyModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF PREVIEW OVERLAY -->
+<div id="pdf-preview-overlay" class="pdf-preview-overlay">
+  <div class="pdf-preview-container">
+    <div class="pdf-preview-header">
+      <span class="pdf-preview-title">Patient Profile Preview</span>
+      <div class="pdf-preview-actions">
+        <button class="btn btn-primary btn-with-icon-gap" onclick="window.print()">🖨 Print</button>
+        <button class="btn btn-download btn-with-icon-gap" id="pdf-download-btn" onclick="downloadPreviewPdf()">⬇ Download PDF</button>
+        <button class="btn btn-email btn-with-icon-gap" id="pdf-email-btn" onclick="emailFromPreview()">📧 Send Email</button>
+        <button class="btn btn-overlay-close" onclick="closePdfPreview()">✕ Close</button>
+      </div>
+    </div>
+    <div id="pdf-preview-content" class="pdf-preview-content"></div>
+  </div>
+</div>
+
+<script src="/assets/js/utils.js"></script>
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/referral.js"></script>
+<script src="/assets/js/dashboard.js"></script>
+<script src="/assets/js/app.js"></script>
+<script src="/assets/js/referrals-list.js"></script>
+<script src="/assets/js/referral-form.js"></script>
+<script src="/assets/js/schedule.js"></script>
+<script src="/assets/js/logs.js"></script>
+<script src="/assets/js/users.js?v=20260422a"></script>
+<script src="/assets/js/settings.js"></script>
+</body>
+</html>

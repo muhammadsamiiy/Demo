@@ -1,0 +1,22 @@
+@media print {
+  body > *:not(#pdf-preview-overlay) { display: none !important; }
+  #pdf-preview-overlay { display: block !important; position: static !important; background: none !important; padding: 0 !important; }
+  #pdf-preview-overlay > div > div:first-child { display: none !important; }
+  #pdf-preview-content { box-shadow: none !important; border-radius: 0 !important; padding: 20px !important; }
+}
+.pdf-section { margin-bottom: 22px; }
+.pdf-section-title { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #0F766E; border-bottom: 2px solid #0F766E; padding-bottom: 5px; margin-bottom: 12px; }
+.pdf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 20px; }
+.pdf-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 16px; }
+.pdf-field { display: flex; flex-direction: column; gap: 2px; }
+.pdf-label { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #64748b; }
+.pdf-value { font-size: 13px; font-weight: 500; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; min-height: 20px; }
+.pdf-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 2px solid #0f172a; }
+.pdf-logo { font-size: 20px; font-weight: 800; color: #0F766E; }
+.pdf-meta { text-align: right; font-size: 11px; color: #64748b; }
+.pdf-checklist-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+.pdf-check-box { width: 14px; height: 14px; border: 2px solid #cbd5e1; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pdf-check-box.checked { background: #0F766E; border-color: #0F766E; color: white; font-size: 9px; }
+.pdf-comment { background: #f8fafc; border-left: 3px solid #0F766E; padding: 8px 12px; border-radius: 0 8px 8px 0; margin-bottom: 8px; }
+.pdf-comment-meta { font-size: 10px; color: #64748b; margin-bottom: 3px; }
+.pdf-comment-text { font-size: 12px; color: #1e293b; }

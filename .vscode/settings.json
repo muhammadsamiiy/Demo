@@ -1,0 +1,95 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+    "python.terminal.activateEnvironment": true,
+    "chat.tools.terminal.autoApprove": {
+        "/^/var/home/memon/Projects/Home_Care_Referrals/\\.venv/bin/python -m pip show SQLAlchemy$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^/var/home/memon/Projects/Home_Care_Referrals/\\.venv/bin/python -c \"import main; print\\('main import ok'\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^which python && python -V && python -c \"import sqlalchemy,sys; print\\(sqlalchemy\\.__version__\\); print\\(sqlalchemy\\.__file__\\); print\\(sys\\.executable\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^/var/home/memon/Projects/Home_Care_Referrals/\\.venv/bin/python main\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^/var/home/memon/Projects/Home_Care_Referrals/\\.venv/bin/python -c \"import main; print\\('import-ok'\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        ".venv/bin/python": true,
+        "/^mkdir -p frontend/assets/css frontend/assets/js && cp index\\.html frontend/index\\.html && sed -n '11,339p' index\\.html > frontend/assets/css/app\\.css && sed -n '741,762p' index\\.html > frontend/assets/css/print\\.css && sed -n '766,3904p' index\\.html > frontend/assets/js/app\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /var/home/memon/Projects/Home_Care_Referrals && \\{\n  sed -n '1,9p' frontend/index\\.html\n  printf '%s\n' '<link rel=\"stylesheet\" href=\"/assets/css/app\\.css\">' '<link rel=\"stylesheet\" href=\"/assets/css/print\\.css\">'\n  sed -n '341,739p' frontend/index\\.html\n  printf '%s\n' '<script src=\"/assets/js/app\\.js\"></script>'\n  sed -n '3906,3907p' frontend/index\\.html\n\\} > frontend/index\\.refactored\\.html && mv frontend/index\\.refactored\\.html frontend/index\\.html$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^perl -0pi -e 's/\\\\bfetch\\\\\\(/apiFetch\\(/g' frontend/assets/js/app\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^perl -0pi -e 's/fetch\\\\\\(/apiFetch\\\\\\(/g' frontend/assets/js/app\\.js && grep -n \"fetch\\\\\\(\\|apiFetch\\\\\\(\" frontend/assets/js/app\\.js \\| head -n 20$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^perl -0pi -e 's/: User\\\\b/: Any/g; s/: Referral\\\\b/: Any/g; s/List\\\\\\[Referral\\\\\\]/List\\[Any\\]/g' main\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /var/home/memon/Projects/Home_Care_Referrals && python - <<'PY'\nimport pathlib,re\nroot=pathlib\\.Path\\('\\.'\\)\nbad=\\[\\]\nfor p in root\\.rglob\\('\\*\\.py'\\):\n    if 'backend/app/core/shared_imports\\.py' in str\\(p\\)\\.replace\\('\\\\\\\\','/'\\):\n        continue\n    txt=p\\.read_text\\(\\)\n    for i,l in enumerate\\(txt\\.splitlines\\(\\),1\\):\n        if re\\.match\\(r'\\^\\(from\\|import\\)\\\\s\\+',l\\.strip\\(\\)\\):\n            if 'backend\\.app\\.core\\.shared_imports' not in l:\n                bad\\.append\\(\\(str\\(p\\),i,l\\.strip\\(\\)\\)\\)\nif bad:\n    for b in bad\\[:50\\]:\n        print\\(\\*b,sep=' \\| '\\)\nelse:\n    print\\('OK'\\)\nPY$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /var/home/memon/Projects/Home_Care_Referrals && python - <<'PY'\nimport pathlib,re\nroot=pathlib\\.Path\\('\\.'\\)\nbad=\\[\\]\nfor p in root\\.rglob\\('\\*\\.py'\\):\n    sp=str\\(p\\)\\.replace\\('\\\\\\\\','/'\\)\n    if '/\\.venv/' in sp or '/__pycache__/' in sp:\n        continue\n    if sp\\.endswith\\('backend/app/core/shared_imports\\.py'\\):\n        continue\n    txt=p\\.read_text\\(\\)\n    for i,l in enumerate\\(txt\\.splitlines\\(\\),1\\):\n        if re\\.match\\(r'\\^\\(from\\|import\\)\\\\s\\+',l\\.strip\\(\\)\\):\n            if 'backend\\.app\\.core\\.shared_imports' not in l:\n                bad\\.append\\(\\(sp,i,l\\.strip\\(\\)\\)\\)\nif bad:\n    for b in bad:\n        print\\(\\*b,sep=' \\| '\\)\nelse:\n    print\\('OK'\\)\nPY$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /var/home/memon/Projects/Home_Care_Referrals && python - <<'PY'\nimport pathlib,re\npaths=\\[pathlib\\.Path\\('main\\.py'\\)\\]\npaths \\+= list\\(pathlib\\.Path\\('backend'\\)\\.rglob\\('\\*\\.py'\\)\\)\npaths \\+= list\\(pathlib\\.Path\\('database'\\)\\.rglob\\('\\*\\.py'\\)\\)\nbad=\\[\\]\nfor p in paths:\n    sp=str\\(p\\)\\.replace\\('\\\\\\\\','/'\\)\n    if sp=='backend/app/core/shared_imports\\.py':\n        continue\n    txt=p\\.read_text\\(\\)\n    for i,l in enumerate\\(txt\\.splitlines\\(\\),1\\):\n        if re\\.match\\(r'\\^\\(from\\|import\\)\\\\s\\+',l\\.strip\\(\\)\\) and 'backend\\.app\\.core\\.shared_imports' not in l:\n            bad\\.append\\(\\(sp,i,l\\.strip\\(\\)\\)\\)\nif bad:\n    for sp,i,l in bad:\n        print\\(f'\\{sp\\}:\\{i\\}:\\{l\\}'\\)\nelse:\n    print\\('OK'\\)\nPY$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^sqlite3 carereferral\\.db \"SELECT COALESCE\\(TRIM\\(gender\\), '<empty>'\\) AS gender, COUNT\\(\\*\\) AS cnt FROM referrals WHERE is_archived = 0 GROUP BY 1 ORDER BY cnt DESC;\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /var/home/memon/Projects/Home_Care_Referrals && source \\.venv/bin/activate && python -c \"\nfrom database\\.database import Referral\ncols = \\[col\\.name for col in Referral\\.__table__\\.columns if col\\.name != 'id'\\]\nprint\\(f'Total columns in template: \\{len\\(cols\\)\\}'\\)\nprint\\(cols\\)\n\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^source \\.venv/bin/activate && python -c \"import main; print\\('main\\.py loaded OK'\\)\" 2>&1 \\| tail -5$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^set -e\nawk '/\\^\\\\/\\\\/ ─── DASHBOARD/\\{f=1\\} /\\^\\\\/\\\\/ ─── REFERRALS/\\{f=0\\} f' frontend/assets/js/app\\.js > frontend/assets/js/dashboard\\.js\nawk '/\\^\\\\/\\\\/ ─── DASHBOARD/\\{skip=1\\} /\\^\\\\/\\\\/ ─── REFERRALS/\\{skip=0\\} !skip\\{print\\}' frontend/assets/js/app\\.js > frontend/assets/js/app\\.js\\.tmp\nmv frontend/assets/js/app\\.js\\.tmp frontend/assets/js/app\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^set -e\nawk '/DASHBOARD/\\{f=1\\} /REFERRALS/\\{if\\(f\\)\\{f=0;next\\}\\} f' frontend/assets/js/app\\.js > frontend/assets/js/dashboard\\.js\nawk '/DASHBOARD/\\{skip=1\\} /REFERRALS/\\{if\\(skip\\)\\{skip=0\\}\\} !skip\\{print\\}' frontend/assets/js/app\\.js > frontend/assets/js/app\\.js\\.tmp\nmv frontend/assets/js/app\\.js\\.tmp frontend/assets/js/app\\.js\nwc -l frontend/assets/js/app\\.js frontend/assets/js/dashboard\\.js\nrg -n \"DASHBOARD\\|REFERRALS\" frontend/assets/js/app\\.js frontend/assets/js/dashboard\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^git show HEAD:frontend/assets/js/app\\.js \\| awk '/DASHBOARD/\\{f=1\\} /REFERRALS/\\{if\\(f\\)\\{exit\\}\\} f' > frontend/assets/js/dashboard\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Test-Path '\\.\\\\\\.venv\\\\Scripts\\\\python\\.exe'$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^& \"e:/Personal Project/webapp/Home_Care_Referrals/\\.venv/Scripts/python\\.exe\" \"e:/Personal Project/webapp/Home_Care_Referrals/main\\.py\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^Set-Location \"e:/Personal Project/webapp/Home_Care_Referrals\"; & \"e:/Personal Project/webapp/Home_Care_Referrals/\\.venv/Scripts/python\\.exe\" main\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
